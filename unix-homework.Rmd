@@ -3,6 +3,8 @@ title: "The \"Getting to Know Unix\" Problem Set"
 output:
   html_notebook:
     number_sections: yes
+  html_document:
+    df_print: paged
 ---
 
 <!-- The following few lines just change some font sizes and colors and give us horizontal scrolling code and output boxes -->
@@ -284,49 +286,53 @@ rm now.txt
 # Count the number of lines/words/characters (using `wc`) in the two SAM files in the `sam` directory
 
 ```{bash}
-
+for sam in ./sam/*.sam; do wc $sam; done
 ```
 
 # Note that gzcat will decompress all files you give it and send the output to _stdout_.  Knowing this, count how many lines are in all the `R1` files in `fastq` (after decompressing them into text files), and also count up all the lines in the `R1` files in `fastq`.  Note they should be the same.
 
 ```{bash}
-
+# Did I miss something here, these are not the same as specified above?
+for file in ./fastq/*R1*; do filegzwc=`gzcat $file | wc`; filewc=`wc $file`; echo $filegzwc $filewc; done
+# First 3 scolumn will be gzcat | wc output
+# Second 3 columns will be wc of output
 ```
 
 # Now, gzcat all the `R1` files in `fastq` and redirect that to a file called `R1_all_via_gzcat.fq` in the top directory of the repo
 
 ```{bash}
-
+gzcat ./fastq/*R1* > R1_all_via_gzcat.fq
 ```
 
 # People are usually familiar with using `cat` to catenate text files.  It turns out that you can also catenate `gzip` compressed files.  The result is another properly gzipped file that can be decompressed.  Catenate all the gzipped `R1` files in `fastq` into a single (still gzipped) file called `R1_all_via_cat.fq.gz`
 
 ```{bash}
-
+cat ./fastq/*R1* > R1_all_via_cat.fq.gz
 ```
 
 # Copy `R1_all_via_cat.fq.gz` to `copy_of_R1_all_via_cat.fq.gz`
 
 ```{bash}
-
+cp R1_all_via_cat.fq.gz copy_of_R1_all_via_cat.fq.gz
 ```
 
 # Now, decompress `R1_all_via_cat.fq.gz` into `R1_all_via_cat.fq`
 
 ```{bash}
-
+gunzip R1_all_via_cat.fq.gz
 ```
 
 # Compute the SHA1 hashes of `R1_all_via_cat.fq` and `R1_all_via_gzcat.fq` to confirm they are identical
 
 ```{bash}
-
+shasum R1_all_via_cat.fq R1_all_via_gzcat.fq
 ```
 
 # But now, gzip `R1_all_via_gzcat.fq` and compare the result to `copy_of_R1_all_via_cat.fq.gz` by computing the SHA1 hash of each
 
 ```{bash}
-
+gzip R1_all_via_gzcat.fq
+shasum R1_all_via_gzcat.fq.gz copy_of_R1_all_via_cat.fq.gz
 ```
 
 Note that this shows that, although the compressed files are not identical, their contents (once decompressed, are identical).
@@ -334,32 +340,33 @@ Note that this shows that, although the compressed files are not identical, thei
 # using `du` with the `-h` (i.e. "human readable" option) print the file sizes of `R1_all_via_cat.fq` and `copy_of_R1_all_via_cat.fq.gz`.
 
 ```{bash}
-
+du -h R1_all_via_cat.fq copy_of_R1_all_via_cat.fq.gz
 ```
 
 # By what factor (approximately) does the compression save storage space on your disk?
 
 ```
-
+By a factor of 4
 ```
 
 # Remove all files starting with `R1_all` and `copy_of_R1`
 
 ```{bash}
-
+rm R1_all*
+rm copy_of_R1*
 ```
 
 # Now, print the file sizes (with `du -h`, again) of the files in `bam` to the files in `sam`
 
 ```{bash}
-
+du -h bam/*bam sam/*sam
 ```
 
 
 # Print the last 15 lines of `sam/DPCh_plate1_A05_S5.sam` to _stdout_
 
 ```{bash}
-
+tail -n 15 ./sam/DPCh_plate1_A05_S5.sam
 ```
 
 If it all looks like gibberish to you, despair not!  You will be super familiar with
@@ -369,19 +376,19 @@ this file format within a couple of weeks from now.
 # Print the _first_ 15 lines of `sam/DPCh_plate1_A05_S5.sam` to _stdout_
 
 ```{bash}
-
+head -n 15 ./sam/DPCh_plate1_A05_S5.sam
 ```
 
 # Catenate the file `count_files.sh` to _stdout_
 
 ```{bash}
-
+cat count_files.sh
 ```
 
 # Note that `count_files.sh` is a short shell script. Try to execute it with `./count_files.sh`
 
 ```{bash}
-
+./count_files.sh
 ```
 
 Aha! You should have gotten a permission denied error.  99% of the time that occurs because
@@ -390,14 +397,20 @@ the file is not user-executable.
 # List (long) `count_files.sh` to see what the permissions are, and then add execute (`x`) permissions to users and groups with the "add-or-subtract permissions syntax" of `chmod`, then long list it again
 
 ```{bash}
-
+# Not sure why this isn't changing?
+ls -l count_files.sh
+chmod 770 count_files.sh
+ls -l count_files.sh
 ```
-
-
-
 
 # Use chmod to change permissions of the files in the `silly` directory to match their names. For example for the first one you would use: `chmod 770 FILE-rwxrwx---`.  Use the octal specifiers to `chmod`. Do this for all 5 files (one chmod command for each), and at the end do `ls -l silly` to verify they are correct.
 
 ```{bash}
-
+## Still not working...check mattdesaix v staff designations
+chmod 774 ./silly/FILE-rwxrwxr--
+chmod 770 ./silly/FILE-rwxr-----
+chmod 664 ./silly/FILE-rw-rw-r--
+chmod 640 ./silly/FILE-rw-r-----
+chmod 775 ./silly/DIRdrwxrwxr-x/
+ls -l ./silly/
 ```
